@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bulls and cows — Rules</title>
+
+  <style>
+    :root{
+      --bg: #eaf4ff;
+      --panel: #f6fbff;
+      --ink: #0b1b33;
+      --muted: #2a3d5f;
+      --line: #1b345b;
+      --accent: #0b78d1;
+      --accent2:#66b7ff;
+      --shadow: rgba(11, 27, 51, 0.10);
+      --shadow2: rgba(11, 27, 51, 0.18);
+      --max: 980px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(102,183,255,0.25), transparent 40%),
+        linear-gradient(225deg, rgba(11,120,209,0.12), transparent 45%),
+        var(--bg);
+    }
+
+    a{ color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+    a:hover{ text-decoration: none; }
+
+    header{
+      max-width: var(--max);
+      margin: 24px auto 0;
+      padding: 0 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 240px;
+    }
+    .brand img{
+      width: 210px;
+      height: auto;
+      display:block;
+      image-rendering: auto;
+    }
+
+    nav{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    nav a{
+      display:inline-block;
+      padding: 8px 10px;
+      border: 2px solid transparent;
+      color: var(--ink);
+      text-decoration:none;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    nav a[aria-current="page"]{
+      border-color: var(--line);
+      background: rgba(11,120,209,0.06);
+    }
+    nav a:hover{
+      border-color: var(--accent);
+      background: rgba(11,120,209,0.06);
+    }
+
+    .wrap{
+      max-width: var(--max);
+      margin: 18px auto 48px;
+      padding: 0 16px;
+    }
+
+    .carousel{
+      margin-top: 18px;
+      border: 2px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 16px 0 var(--shadow);
+      display:grid;
+      grid-template-columns: 60px 1fr 60px;
+      align-items:stretch;
+      min-height: 360px;
+    }
+
+    .arrow{
+      border: 0;
+      border-right: 2px solid var(--line);
+      background: rgba(11,120,209,0.06);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+      transition: background .12s ease;
+    }
+    .arrow.right{
+      border-right: 0;
+      border-left: 2px solid var(--line);
+    }
+    .arrow:hover{ background: rgba(11,120,209,0.12); }
+    .arrow span{
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--ink);
+      transform: translateY(-1px);
+    }
+
+    .viewport{
+      overflow:hidden;
+      position:relative;
+      padding: 18px 18px 16px;
+    }
+
+    .track{
+      display:flex;
+      width: 300%;
+      transform: translateX(0%);
+      transition: transform .35s ease;
+      will-change: transform;
+    }
+
+    .panel{
+      width: calc(100% / 3);
+      padding: 8px 6px 6px;
+    }
+
+    .panel h1{
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: .2px;
+    }
+    .panel p{
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-weight: 650;
+    }
+    .panel h2{
+      margin: 16px 0 8px;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      border-left: 6px solid var(--accent);
+      padding-left: 10px;
+      color: var(--ink);
+    }
+    .panel ul{
+      margin: 8px 0 0;
+      padding: 0 0 0 18px;
+    }
+    .panel li{
+      margin: 8px 0;
+      color: var(--ink);
+      font-weight: 650;
+    }
+
+    .kbd{
+      display:inline-block;
+      border: 2px solid var(--line);
+      padding: 0 6px;
+      background: #fff;
+      font-weight: 900;
+    }
+
+    .footer{
+      max-width: var(--max);
+      margin: 14px auto 0;
+      padding: 0 16px;
+      color: var(--muted);
+      font-weight: 650;
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 720px){
+      header{ flex-direction:column; align-items:flex-start; }
+      nav{ width:100%; justify-content:flex-start; }
+      .carousel{ grid-template-columns: 52px 1fr 52px; min-height: 420px; }
+      .brand img{ width: 190px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .track{ transition:none; }
+      .arrow{ transition:none; }
+    }
+
+    .btn{
+      appearance:none;
+      border: 2px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 900;
+      padding: 10px 12px;
+      cursor:pointer;
+      box-shadow: 0 10px 0 var(--shadow);
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+      letter-spacing:.2px;
+    }
+    .btn:hover{
+      border-color: var(--accent);
+      background: rgba(102,183,255,0.10);
+    }
+    .btn:active{
+      transform: translateY(2px);
+      box-shadow: 0 8px 0 var(--shadow2);
+    }
+    .btn:focus-visible,
+    .arrow:focus-visible,
+    nav a:focus-visible{
+      outline: 3px solid var(--accent2);
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand" aria-label="Bulls and cows brand">
+      <img src="bc1.png" alt="Bulls and cows logo" />
+    </div>
+
+    <nav aria-label="Main navigation">
+      <a href="#" aria-current="page">Rules</a>
+      <a href="#" title="Optional: link to your home page">Home</a>
+      <a href="#" title="Optional: link to play page">Play</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="carousel" aria-label="Rules carousel">
+      <button class="arrow left" id="prevBtn" type="button" aria-label="Previous section">
+        <span aria-hidden="true">←</span>
+      </button>
+
+      <div class="viewport">
+        <div class="track" id="track">
+          <article class="panel" id="panel-1" aria-label="Overview">
+            <h1>Rules & Usage</h1>
+            <p>
+              Bulls and cows is a small Node.js project. Some actions (like starting the Snake mini-game)
+              depend on the server being available.
+            </p>
+
+            <h2>General rules</h2>
+            <ul>
+              <li>Use the site normally — no spamming requests or trying to break endpoints.</li>
+              <li>No scripts/autoclickers to brute-force actions or flood the server.</li>
+              <li>If something fails, refresh the page and try again after a few seconds.</li>
+            </ul>
+
+            <h2>Navigation</h2>
+            <ul>
+              <li>Use the arrows to switch sections (it loops: 1 → 2 → 3 → 1).</li>
+              <li>Keyboard: <span class="kbd">←</span> / <span class="kbd">→</span></li>
+            </ul>
+          </article>
+
+          <article class="panel" id="panel-2" aria-label="Snake start rule">
+            <h1>Snake: start conditions</h1>
+            <p>
+              The <strong>Play</strong> button should start Snake only when the backend responds.
+              This prevents the game from running in an invalid state.
+            </p>
+
+            <h2>Expected behavior</h2>
+            <ul>
+              <li>If the server responds: Snake can start.</li>
+              <li>If the server does not respond: the site should block the action and show a message.</li>
+              <li>This is expected behavior, not a browser problem.</li>
+            </ul>
+
+            <h2>Typical messages</h2>
+            <ul>
+              <li>“Server is offline”</li>
+              <li>“No response from server”</li>
+              <li>“Try again later”</li>
+            </ul>
+          </article>
+
+          <article class="panel" id="panel-3" aria-label="Availability and data">
+            <h1>Availability & data</h1>
+            <p>
+              Short downtime can happen during updates, restarts, or deployments.
+              If the server is down, some features may be temporarily disabled.
+            </p>
+
+            <h2>Availability expectations</h2>
+            <ul>
+              <li>The server might be unavailable outside “working hours”.</li>
+              <li>Temporary downtime is allowed during maintenance.</li>
+              <li>Slow network can make requests feel delayed.</li>
+            </ul>
+
+            <h2>Privacy (simple)</h2>
+            <ul>
+              <li>No personal data is required to read these rules.</li>
+              <li>Basic technical logs may exist (requests/errors) for debugging.</li>
+            </ul>
+
+            <h2>Reporting issues</h2>
+            <ul>
+              <li>Report bugs via the project’s issue tracker.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+
+      <button class="arrow right" id="nextBtn" type="button" aria-label="Next section">
+        <span aria-hidden="true">→</span>
+      </button>
+    </section>
+
+    <div class="footer" aria-label="Footer">
+      <div>Design: sharp corners, simple motion, logo-driven palette.</div>
+    </div>
+  </main>
+
+  <script>
+    const track = document.getElementById('track');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let index = 0;
+
+    function setIndex(i, animate = true) {
+      const total = 3;
+      index = (i % total + total) % total;
+
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      track.style.transition = (animate && !reduce) ? 'transform .35s ease' : 'none';
+      track.style.transform = `translateX(-${index * (100/3)}%)`;
+    }
+
+    prevBtn.addEventListener('click', () => setIndex(index - 1));
+    nextBtn.addEventListener('click', () => setIndex(index + 1));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') setIndex(index - 1);
+      if (e.key === 'ArrowRight') setIndex(index + 1);
+    });
+  </script>
+</body>
+</html>
